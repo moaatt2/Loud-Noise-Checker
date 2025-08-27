@@ -1,22 +1,27 @@
 
-from collections import deque
 import sounddevice as sd
 import numpy as np
 
 # Smoothing factor for expoential moving average
 alpha = 0.03
 
+# Instantiate a variable to hold an expontential moving average
+ema = 0.0
+
+# Count how many cycles have passed
+cycles_to_warm = int(4/alpha)
+
+# Flag to indicate the first cycle
+first_cycle = True
+
 # How many seconds of audio in each sample
 duration = 0.5
 
-# Set how many samples to keep in memory
-num_samples = 25
-
-# Instantiate a double ended queue to hold samples
-samples = deque(maxlen=num_samples)
-
 
 def audio_callback(indata, frames, time, status):
+    global ema, cycles_to_warm, first_cycle
+
+    # Print any errors if they show up
     if status:
         print(status)
 
@@ -25,18 +30,23 @@ def audio_callback(indata, frames, time, status):
     # Use Root of Mean Square to create a single value for volume that emphasizes louder sounds
     rms = np.sqrt(np.mean(indata**2))
 
-    # Calcualte EMA if enough samples are present
-    if len(samples) == samples.maxlen:
-        numerator = 0
-        for i, item in enumerate(reversed(samples)):
-            numerator += (1-alpha)**i * item
-        ema = numerator / num_samples
+    # Calculate exponetial moving average
+    ema = (ema * (1 - alpha)) + (rms * alpha)
 
-        print("Max samples reached, calculated EMA is:", ema)
+    # Once ema warms up use it
+    if cycles_to_warm == 0:
+        print(f"RMS: {rms:.4f}, EMA: {ema:.4f}")
 
-    samples.append(rms)
+    # For the first cycle set ema to rms to 
+    elif first_cycle:
+        ema = rms
+        first_cycle = False
+        print(f"RMS: {rms:.4f}, Intializing EMA")
 
-    print(len(samples), "samples recorded. Latest RMS:", rms)
+    # Don't print ema for a bit to avoid starting spikes
+    else:
+        cycles_to_warm -= 1
+        print(f"RMS: {rms:.4f}, warming up EMA")
 
 
 
