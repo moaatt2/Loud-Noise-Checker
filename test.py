@@ -3,6 +3,9 @@ from collections import deque
 import sounddevice as sd
 import numpy as np
 
+# Smoothing factor for expoential moving average
+alpha = 0.03
+
 # How many seconds of audio in each sample
 duration = 0.5
 
@@ -21,6 +24,15 @@ def audio_callback(indata, frames, time, status):
 
     # Use Root of Mean Square to create a single value for volume that emphasizes louder sounds
     rms = np.sqrt(np.mean(indata**2))
+
+    # Calcualte EMA if enough samples are present
+    if len(samples) == samples.maxlen:
+        numerator = 0
+        for i, item in enumerate(reversed(samples)):
+            numerator += (1-alpha)**i * item
+        ema = numerator / num_samples
+
+        print("Max samples reached, calculated EMA is:", ema)
 
     samples.append(rms)
 
