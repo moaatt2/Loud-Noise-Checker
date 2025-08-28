@@ -9,7 +9,7 @@ alpha = 0.05
 ema = 0.0
 
 # Count how many cycles have passed
-cycles_to_warm = int(4/alpha)
+cycles_to_warm = int(1/alpha)
 
 # Flag to indicate the first cycle
 first_cycle = True
