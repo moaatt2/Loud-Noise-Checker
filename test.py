@@ -3,7 +3,7 @@ import sounddevice as sd
 import numpy as np
 
 # Smoothing factor for expoential moving average
-alpha = 0.03
+alpha = 0.05
 
 # Instantiate a variable to hold an expontential moving average
 ema = 0.0
@@ -15,7 +15,7 @@ cycles_to_warm = int(4/alpha)
 first_cycle = True
 
 # How many seconds of audio in each sample
-duration = 0.5
+duration = 0.1
 
 
 def audio_callback(indata, frames, time, status):
