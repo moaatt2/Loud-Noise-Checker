@@ -20,8 +20,8 @@ duration = 0.1
 # Threshold for detecting a loud noise
 threshold = 4
 
-# A fixed
-min_trigger_rms = 0.1
+# Minimum RMS value to trigger a loud noise detection
+min_trigger_rms = 0.15
 
 
 def audio_callback(indata, frames, time, status):
