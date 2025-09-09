@@ -20,6 +20,9 @@ duration = 0.1
 # Threshold for detecting a loud noise
 threshold = 4
 
+# A fixed
+min_trigger_rms = 0.1
+
 
 def audio_callback(indata, frames, time, status):
     global ema, cycles_to_warm, first_cycle
@@ -41,7 +44,7 @@ def audio_callback(indata, frames, time, status):
         print(f"RMS: {rms:.4f}, EMA: {ema:.4f}")
 
         # Detect loud noise using threshold
-        if rms > (ema * threshold):
+        if rms > (ema * threshold) and (rms > min_trigger_rms):
             print("Loud noise detected!")
 
     # For the first cycle set ema to rms to 
