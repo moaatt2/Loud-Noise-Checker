@@ -1,6 +1,9 @@
 
 import sounddevice as sd
 import numpy as np
+import threading
+import pyttsx3
+import queue
 
 # Smoothing factor for expoential moving average
 alpha = 0.05
@@ -22,6 +25,20 @@ threshold = 4
 
 # Minimum RMS value to trigger a loud noise detection
 min_trigger_rms = 0.15
+
+# Queue to hold tts requests
+tts_queue = queue.Queue()
+
+
+# Define a worker functon to process jobs on the queue
+def tts_worker():
+    engine = pyttsx3.init()
+    while True:
+        text = tts_queue.get()
+        if text is None:
+            break
+        engine.say(text)
+        engine.runAndWait()
 
 
 def audio_callback(indata, frames, time, status):
@@ -46,6 +63,7 @@ def audio_callback(indata, frames, time, status):
         # Detect loud noise using threshold
         if rms > (ema * threshold) and (rms > min_trigger_rms):
             print("Loud noise detected!")
+            tts_queue.put("Loud noise detected!")
 
     # For the first cycle set ema to rms to 
     elif first_cycle:
@@ -59,6 +77,9 @@ def audio_callback(indata, frames, time, status):
         print(f"RMS: {rms:.4f}, warming up EMA")
 
 
+# Start tts thread worker
+speaker_thread = threading.Thread(target=tts_worker, daemon=True)
+speaker_thread.start()
 
 with sd.InputStream(callback=audio_callback, channels=1, samplerate=44100, blocksize=int(44100 * duration)):
     print("Recording... Press Ctrl+C to stop.")
@@ -67,3 +88,5 @@ with sd.InputStream(callback=audio_callback, channels=1, samplerate=44100, block
             pass
     except KeyboardInterrupt:
         print("Stopped recording.")
+        tts_queue.put(None)   # Signal the thread to exit
+        speaker_thread.join() # Wait for thread to finish
