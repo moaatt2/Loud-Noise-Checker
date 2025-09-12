@@ -2,6 +2,7 @@
 import sounddevice as sd
 import win32com.client
 import numpy as np
+import datetime
 import pyttsx3
 
 # Smoothing factor for expoential moving average
@@ -25,6 +26,10 @@ threshold = 4
 # Minimum RMS value to trigger a loud noise detection
 min_trigger_rms = 0.15
 
+# Setup for notification throttling
+min_notification_interval = datetime.timedelta(seconds=10)
+last_notification = None
+
 # Generate message audio file
 engine = pyttsx3.init()
 engine.save_to_file('Loud noise detected!', 'alert.wav')
@@ -37,15 +42,12 @@ class FastTTS:
         self.speaker = win32com.client.Dispatch("SAPI.SpVoice")
     def say(self, text: str):
         self.speaker.Speak(text, 1)
-
 tts = FastTTS()
-
-
 
 
 # Callback function to process audio data
 def audio_callback(indata, frames, time, status):
-    global ema, cycles_to_warm, first_cycle, engine
+    global ema, cycles_to_warm, first_cycle, engine, last_notification
 
     # Print any errors if they show up
     if status:
@@ -64,7 +66,16 @@ def audio_callback(indata, frames, time, status):
         # Detect loud noise using threshold
         if rms > (ema * threshold) and (rms > min_trigger_rms):
             print("Loud noise detected!")
-            tts.say("Loud noise detected!")
+
+            # Check if enough time has passed since the last notification
+            current_time = datetime.datetime.now()
+            if last_notification is None or (current_time - last_notification) > min_notification_interval:
+                print("Notifying user...")
+                tts.say("Loud noise detected!")
+                last_notification = current_time
+            else:
+                print("Notification throttled.")
+
 
     # For the first cycle set ema to rms to 
     elif first_cycle:
