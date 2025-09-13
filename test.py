@@ -3,37 +3,47 @@ import sounddevice as sd
 import win32com.client
 import numpy as np
 import datetime
-import pyttsx3
+import json
 
-# Smoothing factor for expoential moving average
-alpha = 0.05
+###############################
+### Load Settings From JSON ###
+###############################
 
-# Instantiate a variable to hold an expontential moving average
+# Open file and load settings
+with open('settings.json', 'r') as f:
+    settings = json.load(f)
+
+    # Smoothing factor for expoential moving average
+    alpha = settings["exponential_moving_average_alpha"]
+
+    # How many seconds of audio in each sample
+    duration = settings["sample_duration"]
+
+    # To trigger loud noise detection, RMS > EMA * threshold
+    threshold = settings["threshold"]
+
+    # Minimum RMS value to trigger a loud noise detection
+    min_trigger_rms = settings["min_trigger_rms"]
+
+    # Minimum time between notifications
+    interval_seconds = settings["min_notification_interval_seconds"]
+    min_notification_interval = datetime.timedelta(seconds=interval_seconds)
+
+    # Determine tts message
+    tts_message = settings["tts_message"]
+
+
+# Instiantiate ems variable
 ema = 0.0
 
-# Count how many cycles have passed
-cycles_to_warm = int(1/alpha)
-
-# Flag to indicate the first cycle
-first_cycle = True
-
-# How many seconds of audio in each sample
-duration = 0.1
-
-# Threshold for detecting a loud noise
-threshold = 4
-
-# Minimum RMS value to trigger a loud noise detection
-min_trigger_rms = 0.15
-
-# Setup for notification throttling
-min_notification_interval = datetime.timedelta(seconds=10)
+# Initialize last notification time
 last_notification = None
 
-# Generate message audio file
-engine = pyttsx3.init()
-engine.save_to_file('Loud noise detected!', 'alert.wav')
-engine.runAndWait()
+# Set flat for first ema cycle
+first_cycle = True
+
+# Determine how many cycles are needed to warm up the ema
+cycles_to_warm = int(1/alpha)
 
 
 # Fast (windows specific) low-latency non-blocking TTS using SAPI
@@ -71,11 +81,10 @@ def audio_callback(indata, frames, time, status):
             current_time = datetime.datetime.now()
             if last_notification is None or (current_time - last_notification) > min_notification_interval:
                 print("Notifying user...")
-                tts.say("Loud noise detected!")
+                tts.say(tts_message)
                 last_notification = current_time
             else:
                 print("Notification throttled.")
-
 
     # For the first cycle set ema to rms to 
     elif first_cycle:
