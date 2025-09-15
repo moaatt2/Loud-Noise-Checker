@@ -32,6 +32,15 @@ with open('settings.json', 'r') as f:
     # Determine tts message
     tts_message = settings["tts_message"]
 
+    # Number of loud noises needed to trigger burst alert
+    burst_alert_count = settings["burst_alert_count"]
+
+    # Number of seconds that a message is kept in mind when considering burst alert
+    burst_alert_window = settings["burst_alert_window"]
+
+    # Message to use for burst alert
+    burst_alert_message = settings["burst_alert_message"]
+
 
 # Instiantiate ems variable
 ema = 0.0
@@ -45,6 +54,9 @@ first_cycle = True
 # Determine how many cycles are needed to warm up the ema
 cycles_to_warm = int(1/alpha)
 
+# Initialize alert history for burst detection
+alert_history = []
+
 
 # Fast (windows specific) low-latency non-blocking TTS using SAPI
 class FastTTS:
@@ -57,7 +69,7 @@ tts = FastTTS()
 
 # Callback function to process audio data
 def audio_callback(indata, frames, time, status):
-    global ema, cycles_to_warm, first_cycle, engine, last_notification
+    global ema, cycles_to_warm, first_cycle, engine, last_notification, alert_history
 
     # Print any errors if they show up
     if status:
@@ -80,9 +92,21 @@ def audio_callback(indata, frames, time, status):
             # Check if enough time has passed since the last notification
             current_time = datetime.datetime.now()
             if last_notification is None or (current_time - last_notification) > min_notification_interval:
-                print("Notifying user...")
-                tts.say(tts_message)
                 last_notification = current_time
+
+                # Add current time to alert history
+                alert_history.append(current_time)
+
+                # Remove old alerts from history
+                alert_history = [t for t in alert_history if (current_time - t).total_seconds() <= burst_alert_window]
+
+                # Determine message to send based on number of alerts in history
+                message = tts_message if len(alert_history) < burst_alert_count else burst_alert_message
+
+                # Send Mesage
+                print("Notifying user...")
+                tts.say(message)
+
             else:
                 print("Notification throttled.")
 
