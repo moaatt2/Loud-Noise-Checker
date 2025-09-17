@@ -42,6 +42,9 @@ with open('settings.json', 'r') as f:
     # Message to use for burst alert
     burst_alert_message = settings["burst_alert_message"]
 
+    # Length of history to keep for graphing
+    graph_history = settings["graph_history_length"]
+
 
 #######################################
 ### Define Helper Functions/Classes ###
@@ -57,7 +60,7 @@ class FastTTS:
 
 # Callback function to process audio data
 def audio_callback(indata, frames, time, status):
-    global ema, cycles_to_warm, first_cycle, engine, last_notification, alert_history
+    global ema, cycles_to_warm, first_cycle, engine, last_notification, alert_history, rms_history, ema_history
 
     # Print any errors if they show up
     if status:
@@ -66,8 +69,16 @@ def audio_callback(indata, frames, time, status):
     # Use Root of Mean Square to create a single value for volume that emphasizes louder sounds
     rms = np.sqrt(np.mean(indata**2))
 
+    # Add most recent rms and only keep up to graph_history number of values
+    rms_history.append(rms)
+    rms_history = rms_history[-graph_history:]
+
     # Calculate exponetial moving average
     ema = (ema * (1 - alpha)) + (rms * alpha)
+
+    # Add most recent ema and only keep up to graph_history number of values
+    ema_history.append(ema)
+    ema_history = ema_history[-graph_history:]
 
     # Once ema warms up use it
     if cycles_to_warm == 0:
@@ -131,6 +142,12 @@ alert_history = []
 
 # Initialze tts engine
 tts = FastTTS()
+
+# Initialize ema history
+ema_history = []
+
+# Initialize rms history
+rms_history = []
 
 
 #################################
