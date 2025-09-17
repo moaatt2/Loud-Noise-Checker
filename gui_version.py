@@ -80,6 +80,10 @@ def audio_callback(indata, frames, time, status):
     ema_history.append(ema)
     ema_history = ema_history[-graph_history:]
 
+    # Update text box with recent history
+    text.delete(1.0, tkinter.END)
+    text.insert(tkinter.END, f"Recent RMS History: {rms_history[-5:]}\n\nRecent EMA History: {ema_history[-5:]}\n")
+
     # Once ema warms up use it
     if cycles_to_warm == 0:
         print(f"RMS: {rms:.4f}, EMA: {ema:.4f}")
@@ -157,6 +161,10 @@ rms_history = []
 window = tkinter.Tk()
 window.title("Loud Noise Monitor")
 window.geometry("400x400")
+
+# Add basic text box
+text = tkinter.Text(window)
+text.pack()
 
 
 ##########################
