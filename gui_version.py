@@ -114,7 +114,7 @@ def audio_callback(indata, frames, time, status):
 ### Initialize Variables ###
 ############################
 
-# Instiantiate ems variable
+# Instiantiate ema variable
 ema = 0.0
 
 # Initialize last notification time
