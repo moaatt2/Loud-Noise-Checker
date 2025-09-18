@@ -110,6 +110,9 @@ def audio_callback(indata, frames, time, status):
                 print("Notifying user...")
                 tts.say(message)
 
+                # Update event log text box
+                event_log.insert(tkinter.END, f"{current_time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
+
             else:
                 print("Notification throttled.")
 
