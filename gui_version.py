@@ -45,6 +45,9 @@ with open('settings.json', 'r') as f:
     # Length of history to keep for graphing
     graph_history = settings["graph_history_length"]
 
+    # Max number of events allowed in event log
+    event_log_limit = settings["event_log_limit"]
+
 
 #######################################
 ### Define Helper Functions/Classes ###
@@ -110,8 +113,20 @@ def audio_callback(indata, frames, time, status):
                 print("Notifying user...")
                 tts.say(message)
 
+                # Get data from event log
+                event_log_data = event_log.get(1.0, tkinter.END).strip().split('\n')
+
+                # Add new message to event log data
+                event_log_data = [f"{current_time.strftime('%Y-%m-%d %H:%M:%S')} - {message}"] + event_log_data
+
+                # Keep only the most recent event_log_limit number of messages
+                event_log_data = event_log_data[:event_log_limit]
+
+                # Clear event log text box
+                event_log.delete(1.0, tkinter.END)
+
                 # Update event log text box
-                event_log.insert(tkinter.END, f"{current_time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
+                event_log.insert(tkinter.END, '\n'.join(event_log_data))
 
             else:
                 print("Notification throttled.")

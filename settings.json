@@ -9,5 +9,6 @@
     "burst_alert_window": 180,
     "burst_alert_message": "Many loud noises detected recently, please take appropriate action.",
 
-    "graph_history_length": 100
+    "graph_history_length": 100,
+    "event_log_limit": 50
 }
