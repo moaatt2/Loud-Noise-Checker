@@ -81,8 +81,8 @@ def audio_callback(indata, frames, time, status):
     ema_history = ema_history[-graph_history:]
 
     # Update text box with recent history
-    text.delete(1.0, tkinter.END)
-    text.insert(tkinter.END, f"Recent RMS History: {rms_history[-5:]}\n\nRecent EMA History: {ema_history[-5:]}\n")
+    underlying_data.delete(1.0, tkinter.END)
+    underlying_data.insert(tkinter.END, f"Recent RMS History: {rms_history[-5:]}\n\nRecent EMA History: {ema_history[-5:]}\n")
 
     # Once ema warms up use it
     if cycles_to_warm == 0:
@@ -160,11 +160,34 @@ rms_history = []
 
 window = tkinter.Tk()
 window.title("Loud Noise Monitor")
-window.geometry("400x400")
+window.geometry("400x800")
 
-# Add basic text box
-text = tkinter.Text(window)
-text.pack()
+
+######################
+### Tkinter Layout ###
+######################
+
+# Raw Data Label
+label = tkinter.Label(window, text="Underlying Audio Data")
+label.config(font=("Arial", 12, 'bold'))
+label.pack()
+
+# Raw Data Text Box
+underlying_data = tkinter.Text(window)
+underlying_data.pack()
+
+# Vertical Line
+separator = tkinter.Frame(height=2, bd=1, relief=tkinter.SUNKEN)
+separator.pack(fill=tkinter.X, padx=5, pady=5)
+
+# Event Log Label
+label = tkinter.Label(window, text="Loud Noise Message Event Log")
+label.config(font=("Arial", 12, 'bold'))
+label.pack()
+
+# Loud Noise Event Text Box
+event_log = tkinter.Text(window)
+event_log.pack()
 
 
 ##########################
