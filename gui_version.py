@@ -1,4 +1,6 @@
 
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 import sounddevice as sd
 import win32com.client
 import numpy as np
@@ -171,14 +173,47 @@ ema_history = []
 # Initialize rms history
 rms_history = []
 
-
 #################################
 ### Initialize Tkinter Window ###
 #################################
 
 window = tkinter.Tk()
 window.title("Loud Noise Monitor")
-window.geometry("400x800")
+window.geometry("400x1200")
+
+
+################################
+### Initalize Matplot Figure ###
+################################
+
+# Initialize figure and empty plots
+fix, ax = plt.subplots(figsize=(5, 4), dpi=100)
+rms_line, = ax.plot([], [], "b-", label='RMS')
+ema_line, = ax.plot([], [], "r-", label='EMA')
+
+# Set Axis limits
+ax.set_ylim(0, 0.5)
+ax.set_xlim(0, graph_history)
+
+# Create canvas for tkinter and initally draw it
+canvas = FigureCanvasTkAgg(fix, master=window)
+canvas.draw()
+
+
+################################
+### Function to Update Graph ###
+################################
+
+def update_graph():
+    global rms_history, ema_history
+
+    if not(len(rms_history) == 0 or len(ema_history) == 0):
+        x = np.arange(len(rms_history))
+        rms_line.set_data(x, rms_history)
+        ema_line.set_data(x, ema_history)
+
+    canvas.draw()
+    window.after(100, update_graph)
 
 
 ######################
@@ -193,6 +228,7 @@ label.pack()
 # Raw Data Text Box
 underlying_data = tkinter.Text(window)
 underlying_data.pack()
+canvas.get_tk_widget().pack()
 
 # Vertical Line
 separator = tkinter.Frame(height=2, bd=1, relief=tkinter.SUNKEN)
@@ -215,6 +251,9 @@ event_log.pack()
 # Define/start audio stream
 stream = sd.InputStream(callback=audio_callback, channels=1, samplerate=44100, blocksize=int(44100 * duration))
 stream.start()
+
+# Initialize graph update loop
+update_graph()
 
 # Start tkinter application
 window.mainloop()
