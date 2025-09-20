@@ -141,6 +141,36 @@ def audio_callback(indata, frames, time, status):
         print(f"RMS: {rms:.4f}, warming up EMA")
 
 
+# Function to update graph
+def update_graph():
+    global rms_history, ema_history, graph_update_handle
+
+    if not(len(rms_history) == 0 or len(ema_history) == 0):
+        x = np.arange(len(rms_history))
+        rms_line.set_data(x, rms_history)
+        ema_line.set_data(x, ema_history)
+
+    canvas.draw()
+    graph_update_handle = window.after(100, update_graph)
+
+
+# Function to ensure proper tkinter shutdown
+def shutdown():
+    global graph_update_handle, stream
+
+    # Stop graph update loop
+    if graph_update_handle is not None:
+        window.after_cancel(graph_update_handle)
+
+    # Stop/close audio stream
+    stream.stop()
+    stream.close()
+
+    # Close tkinter window
+    window.quit()
+    window.destroy()
+
+
 ############################
 ### Initialize Variables ###
 ############################
@@ -169,6 +199,10 @@ ema_history = []
 # Initialize rms history
 rms_history = []
 
+# Graph Upate Function Handle
+graph_update_handle = None
+
+
 #################################
 ### Initialize Tkinter Window ###
 #################################
@@ -176,6 +210,9 @@ rms_history = []
 window = tkinter.Tk()
 window.title("Loud Noise Monitor")
 window.geometry("400x800")
+
+# Bind cleaner shutdown
+window.protocol("WM_DELETE_WINDOW", shutdown)
 
 
 ################################
@@ -194,22 +231,6 @@ ax.set_xlim(0, graph_history)
 # Create canvas for tkinter and initally draw it
 canvas = FigureCanvasTkAgg(fix, master=window)
 canvas.draw()
-
-
-################################
-### Function to Update Graph ###
-################################
-
-def update_graph():
-    global rms_history, ema_history
-
-    if not(len(rms_history) == 0 or len(ema_history) == 0):
-        x = np.arange(len(rms_history))
-        rms_line.set_data(x, rms_history)
-        ema_line.set_data(x, ema_history)
-
-    canvas.draw()
-    window.after(100, update_graph)
 
 
 ######################
@@ -251,7 +272,3 @@ update_graph()
 
 # Start tkinter application
 window.mainloop()
-
-# Stop/close audio stream when tkinter window is closed
-stream.stop()
-stream.close()
