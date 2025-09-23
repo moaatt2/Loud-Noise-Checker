@@ -228,6 +228,9 @@ ema_line, = ax.plot([], [], "r-", label='EMA')
 ax.set_ylim(0, 0.5)
 ax.set_xlim(0, graph_history)
 
+# Set a vertical line on the min trigger rms
+plt.axhline(y=min_trigger_rms, color="g", linestyle='-')
+
 # Create canvas for tkinter and initally draw it
 canvas = FigureCanvasTkAgg(fix, master=window)
 canvas.draw()
