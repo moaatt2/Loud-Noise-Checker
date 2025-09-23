@@ -50,6 +50,8 @@ with open('settings.json', 'r') as f:
     # Max number of events allowed in event log
     event_log_limit = settings["event_log_limit"]
 
+    # Graph Y axis limit
+    ylimit = settings["graph_ylimit"]
 
 #######################################
 ### Define Helper Functions/Classes ###
@@ -225,7 +227,7 @@ rms_line, = ax.plot([], [], "b-", label='RMS')
 ema_line, = ax.plot([], [], "r-", label='EMA')
 
 # Set Axis limits
-ax.set_ylim(0, 0.5)
+ax.set_ylim(0, ylimit)
 ax.set_xlim(0, graph_history)
 
 # Set a vertical line on the min trigger rms
