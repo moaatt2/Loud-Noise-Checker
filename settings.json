@@ -11,5 +11,5 @@
 
     "graph_history_length": 100,
     "event_log_limit": 50,
-    "graph_ylimit": 0.5
+    "graph_ylimit": 1
 }
