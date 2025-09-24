@@ -8,7 +8,6 @@
     "burst_alert_count": 5,
     "burst_alert_window": 180,
     "burst_alert_message": "Many loud noises detected recently, please take appropriate action.",
-
     "graph_history_length": 100,
     "event_log_limit": 50,
     "graph_ylimit": 1
