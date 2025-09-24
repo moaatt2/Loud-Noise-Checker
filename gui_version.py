@@ -211,7 +211,7 @@ graph_update_handle = None
 
 window = tkinter.Tk()
 window.title("Loud Noise Monitor")
-window.geometry("400x800")
+window.geometry("400x630")
 
 # Bind cleaner shutdown
 window.protocol("WM_DELETE_WINDOW", shutdown)
@@ -260,7 +260,7 @@ label.config(font=("Arial", 12, 'bold'))
 label.pack()
 
 # Loud Noise Event Text Box
-event_log = tkinter.Text(window)
+event_log = tkinter.Text(window, height=10)
 event_log.pack()
 
 
