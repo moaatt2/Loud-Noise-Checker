@@ -148,7 +148,7 @@ def update_graph():
     global rms_history, ema_history, graph_update_handle
 
     if not(len(rms_history) == 0 or len(ema_history) == 0):
-        x = np.arange(len(rms_history))
+        x=np.arange(0, graph_history*duration, duration)[:len(rms_history)]
         rms_line.set_data(x, rms_history)
         ema_line.set_data(x, ema_history)
 
@@ -229,7 +229,7 @@ ema_line, = ax.plot([], [], "r-", label='EMA')
 
 # Set Axis limits
 ax.set_ylim(0, ylimit)
-ax.set_xlim(0, graph_history)
+ax.set_xlim(0, graph_history*duration)
 
 # Set a vertical line on the min trigger rms
 plt.axhline(y=min_trigger_rms, color="g", linestyle='-')
