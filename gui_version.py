@@ -153,7 +153,8 @@ def update_graph():
         ema_line.set_data(x, ema_history)
 
     canvas.draw()
-    graph_update_handle = window.after(100, update_graph)
+    duration_ms = int(duration * 1000)
+    graph_update_handle = window.after(duration_ms, update_graph)
 
 
 # Function to ensure proper tkinter shutdown
