@@ -148,10 +148,18 @@ def update_graph():
     global rms_history, ema_history, graph_update_handle
 
     if not(len(rms_history) == 0 or len(ema_history) == 0):
-        # x=np.arange(0, graph_history*duration, duration)[:len(rms_history)]
+        # Update graph data
         x=np.arange(-graph_history*duration, 0, duration)[-len(rms_history):]
         rms_line.set_data(x, rms_history)
         ema_line.set_data(x, ema_history)
+
+        # Add red dots for loud noises
+        dots = np.array([[X, rms] for (X, rms, ema) in zip(x, rms_history, ema_history) if rms > (ema * threshold) and (rms > min_trigger_rms)])
+        if len(dots) > 0:
+            loud_noise_dots.set_data(dots[:,0], dots[:,1])
+        else:
+            loud_noise_dots.set_data([], [])
+
 
     canvas.draw()
     duration_ms = int(duration * 1000)
@@ -227,6 +235,7 @@ window.protocol("WM_DELETE_WINDOW", shutdown)
 fix, ax = plt.subplots(figsize=(5, 4), dpi=100)
 rms_line, = ax.plot([], [], "b-", label='RMS')
 ema_line, = ax.plot([], [], "r-", label='EMA')
+loud_noise_dots, = ax.plot([], [], "ro", label='Loud Noise')
 
 # Set Axis limits
 ax.set_ylim(0, ylimit)
