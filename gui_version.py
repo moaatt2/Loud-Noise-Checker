@@ -226,6 +226,10 @@ window.geometry("400x630")
 # Bind cleaner shutdown
 window.protocol("WM_DELETE_WINDOW", shutdown)
 
+# Set window icon
+window.iconbitmap("assets/icon.ico")
+window.wm_iconbitmap("assets/icon.ico")
+
 
 ################################
 ### Initalize Matplot Figure ###
